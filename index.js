@@ -25,13 +25,18 @@ async function run() {
     await client.connect();
 
      const database = client.db('petsDB');
-     const categories = database.collection('categories')
-
+     const categories = database.collection('categories');
+      const encourages = database.collection('encourage');
 
     //  Pets
 
     app.get('/categories',async(req,res)=>{
       const result =await categories.find().toArray();
+      res.send(result)
+    });
+
+    app.get('/encourages',async(req,res)=>{
+      const result = await encourages.find().toArray();
       res.send(result)
     })
 
