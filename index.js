@@ -29,6 +29,7 @@ async function run() {
     const categories = database.collection("categories");
     const encourages = database.collection("encourage");
     const users = database.collection("users");
+    const pets = database.collection("pets");
 
     //  jwt
     app.post("/jwt", async (req, res) => {
@@ -45,7 +46,7 @@ async function run() {
         return res.status(401).send({ message: "unauthorized access" });
       }
       const token = req.headers.authorization.split(" ")[1];
-      console.log(token);
+      // console.log(token);
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, dec) => {
         if (err) {
           return res.status(401).send({ message: "unauthorized access" });
@@ -59,16 +60,16 @@ async function run() {
     const verifyAdmin = async (req, res, next) => {
       const email = req.dec.email;
       const query = { email: email };
-      const user = await users.findOne(query)
-      const isAdmin =user?.role === 'admin'
-      if(!isAdmin){
-        return res.status(403).send({message :"forbidden access"})
+      const user = await users.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "forbidden access" });
       }
-      next()
+      next();
     };
     // users
 
-    app.get("/users", verifyToken,verifyAdmin, async (req, res) => {
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const result = await users.find().toArray();
       res.send(result);
     });
@@ -87,6 +88,15 @@ async function run() {
       }
       res.send({ admin });
     });
+    app.get("/pets",verifyToken, async (req, res) => {
+      let query = {};
+      if (req.query?.lister_email) {
+        query = { lister_email: req.query.lister_email };
+      }
+      const result = await pets.find(query).toArray();
+      res.send(result);
+      // console.log(req.query);
+    });
     app.post("/users", async (req, res) => {
       const user = req.body;
       // insert email if does not exist
@@ -99,19 +109,24 @@ async function run() {
       const result = await users.insertOne(user);
       res.send(result);
     });
-    app.patch("/users/admin/:id",verifyToken,verifyAdmin, async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
+    app.patch(
+      "/users/admin/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
 
-      const updateRole = {
-        $set: {
-          role: "admin",
-        },
-      };
+        const updateRole = {
+          $set: {
+            role: "admin",
+          },
+        };
 
-      const result = await users.updateOne(filter, updateRole);
-      res.send(result);
-    });
+        const result = await users.updateOne(filter, updateRole);
+        res.send(result);
+      }
+    );
 
     //  Pets
 
@@ -122,6 +137,11 @@ async function run() {
 
     app.get("/encourages", async (req, res) => {
       const result = await encourages.find().toArray();
+      res.send(result);
+    });
+    app.post("/pets", verifyToken, async (req, res) => {
+      const pet = req.body;
+      const result = await pets.insertOne(pet);
       res.send(result);
     });
 
@@ -136,7 +156,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Hello Prithibi");
+  res.send("Hello Guys");
 });
 
 app.listen(port, () => {
