@@ -30,6 +30,7 @@ async function run() {
     const encourages = database.collection("encourage");
     const users = database.collection("users");
     const pets = database.collection("pets");
+    const campaigns = database.collection("campaigns");
 
     //  jwt
     app.post("/jwt", async (req, res) => {
@@ -131,6 +132,11 @@ async function run() {
       const result = await encourages.find().toArray();
       res.send(result);
     });
+    app.get("/pets", verifyToken,verifyAdmin, async (req, res) => {
+  
+      const result = await pets.find().toArray();
+      res.send(result);
+    });
     app.get("/pets/mine", verifyToken, async (req, res) => {
       let query = {};
       if (req.query?.lister_email) {
@@ -169,6 +175,14 @@ async function run() {
       const result = await pets.deleteOne(filter);
       res.send(result);
     });
+
+  // campaign
+
+  app.post('/campaigns',verifyToken,async (req,res)=>{
+    const campaign = req.body
+    const result =await campaigns.insertOne(campaign);
+    res.send(result)
+  })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
