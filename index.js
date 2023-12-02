@@ -131,21 +131,19 @@ async function run() {
       const result = await encourages.find().toArray();
       res.send(result);
     });
-    app.get("/pets", verifyToken, async (req, res) => {
+    app.get("/pets/mine", verifyToken, async (req, res) => {
       let query = {};
       if (req.query?.lister_email) {
         query = { lister_email: req.query.lister_email };
       }
       const result = await pets.find(query).toArray();
       res.send(result);
-      // console.log(req.query);
     });
-    app.get("/pets/:id", verifyToken, async (req, res) => {
+    app.get("/pet/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
-      const filter = {_id:new ObjectId(id)}
-      const result = await pets.findOne(filter)
+      const filter = { _id: new ObjectId(id) };
+      const result = await pets.findOne(filter);
       res.send(result);
-     
     });
     app.post("/pets", verifyToken, async (req, res) => {
       const pet = req.body;
@@ -153,28 +151,17 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/pets/:id", verifyToken, async (req, res) => {
+    app.patch("/pet/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
+      const update = req.body;
       const filter = { _id: new ObjectId(id) };
-      const adopt = {
-        $set: {
-          adoption_status: true,
-        },
-      };
-      const result = await pets.updateOne(filter, adopt);
+
+      const result = await pets.updateOne(filter, {
+        $set: update,
+      });
       res.send(result);
     });
-    // app.put("/pets/:id", verifyToken, async (req, res) => {
-    //   const id = req.params.id;
-    //   const filter = { _id: new ObjectId(id) };
-    //   const adopt = {
-    //     $set: {
-    //       adoption_status: true,
-    //     },
-    //   };
-    //   const result = await pets.updateOne(filter, adopt);
-    //   res.send(result);
-    // });
+
     app.delete("/pets/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
