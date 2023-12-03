@@ -132,17 +132,34 @@ async function run() {
       const result = await encourages.find().toArray();
       res.send(result);
     });
-    app.get("/pets", verifyToken,verifyAdmin, async (req, res) => {
-  
+    app.get("/pets", verifyToken, verifyAdmin, async (req, res) => {
       const result = await pets.find().toArray();
       res.send(result);
     });
+
     app.get("/pets/mine", verifyToken, async (req, res) => {
+      const page = parseInt(req.query.page - 1);
+      const size = parseInt(req.query.size);
+
+      let query = {};
+      if (req.query?.lister_email) {
+        query = { lister_email: req.query.lister_email };
+      }
+      const result = await pets
+        .find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
+
+      res.send(result);
+    });
+    app.get("/pets/mine/count", verifyToken, async (req, res) => {
       let query = {};
       if (req.query?.lister_email) {
         query = { lister_email: req.query.lister_email };
       }
       const result = await pets.find(query).toArray();
+
       res.send(result);
     });
     app.get("/pet/:id", verifyToken, async (req, res) => {
@@ -159,12 +176,14 @@ async function run() {
 
     app.patch("/pet/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
+      
       const update = req.body;
       const filter = { _id: new ObjectId(id) };
 
       const result = await pets.updateOne(filter, {
         $set: update,
       });
+     
       res.send(result);
     });
 
@@ -176,13 +195,13 @@ async function run() {
       res.send(result);
     });
 
-  // campaign
+    // campaign
 
-  app.post('/campaigns',verifyToken,async (req,res)=>{
-    const campaign = req.body
-    const result =await campaigns.insertOne(campaign);
-    res.send(result)
-  })
+    app.post("/campaigns", verifyToken, async (req, res) => {
+      const campaign = req.body;
+      const result = await campaigns.insertOne(campaign);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
