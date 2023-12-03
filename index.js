@@ -132,7 +132,7 @@ async function run() {
       const result = await encourages.find().toArray();
       res.send(result);
     });
-    app.get("/pets", verifyToken, verifyAdmin, async (req, res) => {
+    app.get("/pets", verifyToken, async (req, res) => {
       const result = await pets.find().toArray();
       res.send(result);
     });
@@ -176,18 +176,18 @@ async function run() {
 
     app.patch("/pet/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
-      
+
       const update = req.body;
       const filter = { _id: new ObjectId(id) };
 
       const result = await pets.updateOne(filter, {
         $set: update,
       });
-     
+
       res.send(result);
     });
 
-    app.delete("/pets/:id", verifyToken, async (req, res) => {
+    app.delete("/pet/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
 
@@ -196,10 +196,48 @@ async function run() {
     });
 
     // campaign
+    app.get("/campaigns/mine", verifyToken, async (req, res) => {
+      let query = {};
 
+      if (req.query?.creator) {
+        query = { creator: req.query.creator };
+      }
+      const result = await campaigns.find(query).toArray();
+
+      res.send(result);
+    });
+    app.get("/campaign/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await campaigns.findOne(filter);
+      res.send(result);
+    });
+    app.get("/campaigns", verifyToken, async (req, res) => {
+      const result = await campaigns.find().toArray();
+      res.send(result);
+    });
     app.post("/campaigns", verifyToken, async (req, res) => {
       const campaign = req.body;
       const result = await campaigns.insertOne(campaign);
+      res.send(result);
+    });
+    app.patch("/campaign/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+
+      const update = req.body;
+      const filter = { _id: new ObjectId(id) };
+
+      const result = await campaigns.updateOne(filter, {
+        $set: update,
+      });
+
+      res.send(result);
+    });
+    app.delete("/campaign/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+
+      const result = await campaigns.deleteOne(filter);
       res.send(result);
     });
 
