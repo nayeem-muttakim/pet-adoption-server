@@ -133,7 +133,15 @@ async function run() {
       res.send(result);
     });
     app.get("/pets", verifyToken, async (req, res) => {
-      const result = await pets.find().toArray();
+      const filter = req.query;
+
+      const category = filter.category;
+
+      const query = {
+        pet_name: { $regex: filter.search, $options: "i" },
+        "pet_category.value": { $regex: category },
+      };
+      const result = await pets.find(query).toArray();
       res.send(result);
     });
 
