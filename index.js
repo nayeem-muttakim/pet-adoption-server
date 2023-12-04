@@ -31,6 +31,7 @@ async function run() {
     const users = database.collection("users");
     const pets = database.collection("pets");
     const campaigns = database.collection("campaigns");
+    const adoptions = database.collection("adoptions");
 
     //  jwt
     app.post("/jwt", async (req, res) => {
@@ -136,12 +137,20 @@ async function run() {
       const filter = req.query;
 
       const category = filter.category;
-
-      const query = {
-        pet_name: { $regex: filter.search, $options: "i" },
-        "pet_category.value": { $regex: category },
+      let query = {};
+      const options = {
+        sort: {
+          listed_time: -1,
+        },
       };
-      const result = await pets.find(query).toArray();
+
+      if (filter.search || category) {
+        query = {
+          pet_name: { $regex: filter.search, $options: "i" },
+          "pet_category.value": { $regex: category },
+        };
+      }
+      const result = await pets.find(query, options).toArray();
       res.send(result);
     });
 
@@ -181,7 +190,6 @@ async function run() {
       const result = await pets.insertOne(pet);
       res.send(result);
     });
-
     app.patch("/pet/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
 
@@ -202,7 +210,32 @@ async function run() {
       const result = await pets.deleteOne(filter);
       res.send(result);
     });
+    app.get("/pets/adoptions/mine", verifyToken, async (req, res) => {
+      let query = {};
+      if (req.query?.lister) {
+        query = { lister: req.query.lister };
+      }
+      const result = await adoptions.find(query).toArray();
 
+      res.send(result);
+    });
+    app.post("/pets/adoptions", verifyToken, async (req, res) => {
+      const adoption = req.body;
+      const result = await adoptions.insertOne(adoption);
+      res.send(result);
+    });
+    app.patch("/pets/adoption/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+
+      const update = req.body;
+      const filter = { _id: new ObjectId(id) };
+
+      const result = await adoptions.updateOne(filter, {
+        $set: update,
+      });
+
+      res.send(result);
+    });
     // campaign
     app.get("/campaigns/mine", verifyToken, async (req, res) => {
       let query = {};
