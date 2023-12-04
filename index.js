@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 app.use(express.json());
 app.use(cors());
 const port = process.env.PORT || 5589;
@@ -32,6 +33,7 @@ async function run() {
     const pets = database.collection("pets");
     const campaigns = database.collection("campaigns");
     const adoptions = database.collection("adoptions");
+    const donations = database.collection("donations");
 
     //  jwt
     app.post("/jwt", async (req, res) => {
@@ -254,9 +256,9 @@ async function run() {
       res.send(result);
     });
     app.get("/campaigns", verifyToken, async (req, res) => {
-      const query ={}
+      const query = {};
       const result = await campaigns
-        .find(query,{ sort: { created_on: -1 } })
+        .find(query, { sort: { created_on: -1 } })
         .toArray();
       res.send(result);
     });
@@ -283,6 +285,42 @@ async function run() {
 
       const result = await campaigns.deleteOne(filter);
       res.send(result);
+    });
+
+    // donation
+    app.get("/donations/mine", verifyToken, async (req, res) => {
+      let query = {};
+
+      if (req.query?.email) {
+        query = { email: req.query.email };
+      }
+      const result = await donations.find(query).toArray();
+
+      res.send(result);
+    });
+    app.post("/donations", verifyToken, async (req, res) => {
+      const donation = req.body;
+
+      const result = await donations.insertOne(donation);
+    });
+    app.delete("/donation/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+
+      const result = await donations.deleteOne(filter);
+      res.send(result);
+    });
+    // payment
+    app.post("/create-payment-intent", verifyToken, async (req, res) => {
+      const { amount } = req.body;
+      const donation = parseInt(amount * 100);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: donation,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({ clientSecret: paymentIntent.client_secret });
     });
 
     // Send a ping to confirm a successful connection
