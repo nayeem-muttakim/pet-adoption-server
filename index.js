@@ -288,6 +288,11 @@ async function run() {
     });
 
     // donation
+    app.get("/donations", verifyToken, async (req, res) => {
+      const result = await donations.find().toArray();
+
+      res.send(result);
+    });
     app.get("/donations/mine", verifyToken, async (req, res) => {
       let query = {};
 
