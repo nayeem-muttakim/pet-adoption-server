@@ -254,7 +254,10 @@ async function run() {
       res.send(result);
     });
     app.get("/campaigns", verifyToken, async (req, res) => {
-      const result = await campaigns.find().toArray();
+      const query ={}
+      const result = await campaigns
+        .find(query,{ sort: { created_on: -1 } })
+        .toArray();
       res.send(result);
     });
     app.post("/campaigns", verifyToken, async (req, res) => {
