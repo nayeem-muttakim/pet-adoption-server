@@ -27,7 +27,7 @@ async function run() {
     // await client.connect();
 
     const database = client.db("petsDB");
-    const categories = database.collection("categories");
+    // const categories = database.collection("categories");
     const encourages = database.collection("encourage");
     const users = database.collection("users");
     const pets = database.collection("pets");
@@ -126,16 +126,16 @@ async function run() {
 
     //  Pets
 
-    app.get("/categories", async (req, res) => {
-      const result = await categories.find().toArray();
-      res.send(result);
-    });
+    // app.get("/categories", async (req, res) => {
+    //   const result = await categories.find().toArray();
+    //   res.send(result);
+    // });
 
     app.get("/encourages", async (req, res) => {
       const result = await encourages.find().toArray();
       res.send(result);
     });
-    app.get("/pets", verifyToken, async (req, res) => {
+    app.get("/pets", async (req, res) => {
       const filter = req.query;
 
       const category = filter.category;
@@ -181,7 +181,7 @@ async function run() {
 
       res.send(result);
     });
-    app.get("/pet/:id", verifyToken, async (req, res) => {
+    app.get("/pet/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await pets.findOne(filter);
@@ -249,13 +249,13 @@ async function run() {
 
       res.send(result);
     });
-    app.get("/campaign/:id", verifyToken, async (req, res) => {
+    app.get("/campaign/:id",  async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await campaigns.findOne(filter);
       res.send(result);
     });
-    app.get("/campaigns", verifyToken, async (req, res) => {
+    app.get("/campaigns", async (req, res) => {
       const query = {};
       const result = await campaigns
         .find(query, { sort: { created_on: -1 } })
