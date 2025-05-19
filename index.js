@@ -126,15 +126,6 @@ async function run() {
 
     //  Pets
 
-    // app.get("/categories", async (req, res) => {
-    //   const result = await categories.find().toArray();
-    //   res.send(result);
-    // });
-
-    app.get("/encourages", async (req, res) => {
-      const result = await encourages.find().toArray();
-      res.send(result);
-    });
     app.get("/pets", async (req, res) => {
       const filter = req.query;
 
@@ -249,7 +240,7 @@ async function run() {
 
       res.send(result);
     });
-    app.get("/campaign/:id",  async (req, res) => {
+    app.get("/campaign/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await campaigns.findOne(filter);
@@ -339,7 +330,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Hello Guys");
+  res.send("Server Running");
 });
 
 app.listen(port, () => {
